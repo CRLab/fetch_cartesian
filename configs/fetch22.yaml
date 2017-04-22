@@ -1,0 +1,8 @@
+---
+move_group_name: 'arm'
+reference_frame: '/base_link'
+goal_position_tolerance: 0.01
+goal_orientation_tolerance: 0.1
+
+start_location: 'home'
+end_location: 'home'

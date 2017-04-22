@@ -1,0 +1,7 @@
+<launch>
+    <arg name="robot" default="fetch22" />
+
+    <rosparam command="load" file="$(find fetch_cartesian)/configs/$(arg robot).yaml" />
+
+    <node name="fetch_cartesian" pkg="fetch_cartesian" type="cartesian_execution_node.py" output="screen" />
+</launch>

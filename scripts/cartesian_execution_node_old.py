@@ -29,12 +29,12 @@ class CartesianExecutionNode:
          moveit_commander.roscpp_initialize(sys.argv) 
 
          # Initialize the ROS node 
-         # rospy.init_node(node_name) 
+         rospy.init_node(node_name) 
 
          self.cartesian = rospy.get_param('~cartesian', True) 
 
          # Connect to the self.arm move group 
-         self.arm = moveit_commander.MoveGroupCommander("arm") 
+         self.arm = moveit_commander.MoveGroupCommander(rospy.get_param('move_group_name')) 
 
          # Allow replanning to increase the odds of a solution 
          self.arm.allow_replanning(True) 
@@ -55,17 +55,17 @@ class CartesianExecutionNode:
          # go to the start location
          self.arm.go()
 
-    def set_waypoint(self, current_pose, speech_transform): 
+    def set_waypoint(self, start_pose): 
          waypoints = []
          # set the first waypoint to be the starting pose 
-         # if self.cartesian: 
-         #     # append the pose to the waypoints list 
-         #     waypoints.append(start_pose) 
+         if self.cartesian: 
+             # append the pose to the waypoints list 
+             waypoints.append(start_pose) 
 
-         wpose = copy.deepcopy(current_pose) 
+         wpose = copy.deepcopy(start_pose) 
 
          # Set the next waypoint back 0.2 meters and right 0.2 meters 
-         wpose.position.x -= 0.01 
+         wpose.position.x -= 0.3 
          # wpose.position.y -= 0.1 
 
          if self.cartesian: 
@@ -75,14 +75,10 @@ class CartesianExecutionNode:
              self.arm.go() 
              rospy.sleep(1)
 
-         wpose.position.x += speech_transform.translation.x
-         wpose.position.y += speech_transform.translation.y
-         wpose.position.z += speech_transform.translation.z
-
-         # # set next waypoint 
-         # # wpose.position.x += 0.05 
-         # wpose.position.z += 0.02 
-         # # wpose.position.z -= 0.15 
+         # set next waypoint 
+         # wpose.position.x += 0.05 
+         wpose.position.z += 0.2 
+         # wpose.position.z -= 0.15 
 
          if self.cartesian: 
              waypoints.append(copy.deepcopy(wpose)) 
@@ -91,31 +87,37 @@ class CartesianExecutionNode:
              self.arm.go() 
              rospy.sleep(1)
 
-         # wpose.position.x += 0.1
-         # # wpose.position.z -= 0.15 
+         wpose.position.x += 0.3
+         # wpose.position.z -= 0.15 
 
-         # if self.cartesian: 
-         #     waypoints.append(copy.deepcopy(wpose)) 
-         # else: 
-         #     self.arm.set_pose_target(wpose) 
-         #     self.arm.go() 
-         #     rospy.sleep(1)
+         if self.cartesian: 
+             waypoints.append(copy.deepcopy(wpose)) 
+         else: 
+             self.arm.set_pose_target(wpose) 
+             self.arm.go() 
+             rospy.sleep(1)
 
-         # wpose.position.z -= 0.1 
-         # # wpose.position.z -= 0.15 
+         wpose.position.z -= 0.2 
+         # wpose.position.z -= 0.15 
 
-         # if self.cartesian: 
-         #     waypoints.append(copy.deepcopy(wpose)) 
-         # else: 
-         #     self.arm.set_pose_target(wpose) 
-         #     self.arm.go() 
-         #     rospy.sleep(1) 
-         # if self.cartesian: 
-             # waypoints.append(copy.deepcopy(start_pose)) 
-         # else: 
-         #     self.arm.set_pose_target(start_pose) 
-         #     self.arm.go() 
-         #     rospy.sleep(1) 
+         if self.cartesian: 
+             waypoints.append(copy.deepcopy(wpose)) 
+         else: 
+             self.arm.set_pose_target(wpose) 
+             self.arm.go() 
+             rospy.sleep(1) 
+
+
+
+
+
+         if self.cartesian: 
+             waypoints.append(copy.deepcopy(start_pose)) 
+         else: 
+             self.arm.set_pose_target(start_pose) 
+             self.arm.go() 
+             rospy.sleep(1) 
+
          if self.cartesian: 
              fraction = 0.0 
              maxtries = 100 
@@ -165,10 +167,9 @@ class CartesianExecutionNode:
 if __name__ == "__main__": 
      try: 
          ce = CartesianExecutionNode()
-         rospy.loginfo("now in cartesian node ...")
          #get current pose to start
          #then we can set different
          start_pose = ce.arm.get_current_pose(ce.end_effector_link).pose
-         ce.set_waypoint(start_pose, speech_transform)
+         ce.set_waypoint(start_pose)
      except rospy.ROSInterruptException: 
          pass 
